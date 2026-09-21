@@ -1,0 +1,29 @@
+{%- comment -%}
+  TRMNL X: 1872×1404 fyzických px = 1040×780 CSS px (pixel ratio 1,8).
+  Rozměry v CSS jsou proto zadané jako fyzické px dělené --pixel-ratio:
+  okraj 40 px, rámeček 3 px, text 46 px, teplota 60 px.
+{%- endcomment -%}
+<style>
+  .cw { position: absolute; inset: 0; overflow: hidden; background: #fff; --pr: var(--pixel-ratio, 1.8); }
+  .cw__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cw__box {
+    position: absolute;
+    left: calc(40px / var(--pr)); right: calc(40px / var(--pr)); bottom: calc(40px / var(--pr));
+    padding: calc(26px / var(--pr)) calc(36px / var(--pr));
+    background: #fff; color: #000;
+    border: calc(3px / var(--pr)) solid #000;
+    border-radius: calc(18px / var(--pr));
+    font-family: Inter, "Helvetica Neue", Arial, sans-serif;
+    font-size: calc(46px / var(--pr)); line-height: 1.3; font-weight: 500;
+  }
+  .cw__temp { font-size: calc(60px / var(--pr)); font-weight: 800; white-space: nowrap; }
+</style>
+
+<div class="layout">
+  <div class="cw" data-obrazek="{{ cw_obrazek }}" data-ok="{{ cw_ok }}" data-kat="{{ cw_kat }}" data-obdobi="{{ cw_obd }}" data-doba="{{ cw_doba }}" data-doba-textu="{{ cw_doba_textu }}" data-pasmo="{{ cw_pasmo }}" data-vitr="{{ cw_vitr }}">
+    <img class="cw__img" src="{{ cw_base }}/img/{{ cw_obrazek }}.png" alt="">
+    <div class="cw__box">
+      <span class="cw__text">{{ cw_veta_pocasi }}{% if cw_ok %} Venku je <span class="cw__temp">{{ cw_teplota }}</span> {{ cw_stupne }}.{% endif %}{% if cw_veta_obleceni != "" %} {{ cw_veta_obleceni }}{% endif %}{% if cw_veta_vitr != "" %} {{ cw_veta_vitr }}{% endif %}</span>
+    </div>
+  </div>
+</div>

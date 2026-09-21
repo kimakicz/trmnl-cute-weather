@@ -10,13 +10,22 @@ from pathlib import Path
 KATEGORIE = ["jasno", "polojasno", "zatazeno", "dest", "bourka", "snih", "mlha"]
 DOBY = ["rano", "den", "vecer", "noc"]
 PASMA = ["mraz", "zima", "chladno", "teplo", "horko"]
-SILY = ["slaby", "stredni", "silny"]
+SILY = ["stredni", "silny"]   # slabý vítr se nezobrazuje
 
 POCET_VET = 20
 MAX_SLOV = 12
 MAX_STEJNY_ZACATEK = 3
 
 ZAKAZANE = re.compile(r"\d|°|\bstup(eň|ně|ňů|ních)\b", re.IGNORECASE)
+
+# oblečení nesmí odporovat teplotnímu pásmu
+TEPLE_OBLECENI = r"bund|svetr|mikin|čepic|kulich|šál|rukavic|palčák|oteplovák|kabát"
+LEHKE_OBLECENI = r"kraťas|tílk|sandál|plavk|bos[éý]|krátk\w+ rukáv"
+ROZPORY = {
+    "mraz": re.compile(LEHKE_OBLECENI, re.IGNORECASE),
+    "zima": re.compile(LEHKE_OBLECENI, re.IGNORECASE),
+    "horko": re.compile(TEPLE_OBLECENI, re.IGNORECASE),
+}
 
 
 def normalizuj(veta):
@@ -77,7 +86,8 @@ def zkontroluj_skupinu(nazev, vety, chyby, vsechny):
 
 
 def main():
-    cesta = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).with_name("texty.json")
+    vychozi = Path(__file__).resolve().parent.parent / "public" / "texty.json"
+    cesta = Path(sys.argv[1]) if len(sys.argv) > 1 else vychozi
     try:
         data = json.loads(cesta.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as e:
@@ -105,6 +115,10 @@ def main():
                 for klic in klice:
                     if klic in obsah:
                         zkontroluj_skupinu(f"{sekce}.{klic}", obsah[klic], chyby, vsechny)
+                        if sekce == "obleceni" and klic in ROZPORY and isinstance(obsah[klic], list):
+                            for i, veta in enumerate(obsah[klic], 1):
+                                if isinstance(veta, str) and ROZPORY[klic].search(veta):
+                                    chyby.append(f"obleceni.{klic}[{i}]: oblečení odporuje pásmu: {veta}")
 
     for veta, vyskyty in vsechny.items():
         if len(vyskyty) > 1:

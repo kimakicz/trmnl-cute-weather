@@ -1,0 +1,12 @@
+# generované obrázky si každý vytváří sám (viz README)
+raw/
+public/img/
+*.png
+*.webp
+!refs/*.png
+
+# náhledy a dočasné soubory testů
+preview*.png
+.test_samples/
+__pycache__/
+.DS_Store

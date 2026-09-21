@@ -1,0 +1,124 @@
+{%- comment -%}
+  cute-weather – klasifikace počasí a výběr vět.
+  Vstup:  IDX_0 = Open-Meteo (current), IDX_1 = texty.json, form field base_url.
+  Výstup: cw_ok, cw_obrazek, cw_veta_pocasi, cw_teplota, cw_stupne,
+          cw_veta_obleceni, cw_veta_vitr (+ cw_kat, cw_obd, cw_doba, cw_doba_textu,
+          cw_pasmo, cw_vitr pro ladění a testy).
+  Pozor: Liquid vyhodnocuje and/or zprava doleva, podmínky proto nemíchají oba operátory.
+{%- endcomment -%}
+
+{%- assign cw_base = trmnl.plugin_settings.custom_fields_values.base_url | default: "" | strip -%}
+{%- assign cw_posledni = cw_base | slice: -1, 1 -%}
+{%- if cw_posledni == "/" -%}
+  {%- assign cw_delka = cw_base | size | minus: 1 -%}
+  {%- assign cw_base = cw_base | slice: 0, cw_delka -%}
+{%- endif -%}
+
+{%- assign cw_cur = IDX_0.current -%}
+{%- assign cw_cas = cw_cur.time | append: "" -%}
+{%- assign cw_cas_delka = cw_cas | size -%}
+{%- assign cw_ok = false -%}
+{%- if cw_cas_delka >= 13 and cw_cur.weather_code != nil and cw_cur.temperature_2m != nil -%}
+  {%- assign cw_ok = true -%}
+{%- endif -%}
+
+{%- assign cw_obrazek = "vychozi_den" -%}
+{%- assign cw_veta_pocasi = "Podívej se z okna, jaké je dnes venku počasí." -%}
+{%- assign cw_veta_obleceni = "" -%}
+{%- assign cw_veta_vitr = "" -%}
+
+{%- if cw_ok -%}
+  {%- comment -%} čas bereme z Open-Meteo (lokální díky timezone=Europe/Prague), ne z 'now' {%- endcomment -%}
+  {%- assign cw_mesic = cw_cas | slice: 5, 2 | plus: 0 -%}
+  {%- assign cw_den = cw_cas | slice: 8, 2 | plus: 0 -%}
+  {%- assign cw_hodina = cw_cas | slice: 11, 2 | plus: 0 -%}
+  {%- assign cw_dny_pred = "0,31,59,90,120,151,181,212,243,273,304,334" | split: "," -%}
+  {%- assign cw_mesic_idx = cw_mesic | minus: 1 -%}
+  {%- assign cw_den_v_roce = cw_dny_pred[cw_mesic_idx] | plus: cw_den -%}
+
+  {%- comment -%} kategorie podle WMO weather_code {%- endcomment -%}
+  {%- assign cw_kod = cw_cur.weather_code | plus: 0 -%}
+  {%- assign cw_kat = "zatazeno" -%}
+  {%- if cw_kod == 0 -%}{%- assign cw_kat = "jasno" -%}
+  {%- elsif cw_kod == 1 or cw_kod == 2 -%}{%- assign cw_kat = "polojasno" -%}
+  {%- elsif cw_kod == 45 or cw_kod == 48 -%}{%- assign cw_kat = "mlha" -%}
+  {%- elsif cw_kod >= 51 and cw_kod <= 67 -%}{%- assign cw_kat = "dest" -%}
+  {%- elsif cw_kod >= 80 and cw_kod <= 82 -%}{%- assign cw_kat = "dest" -%}
+  {%- elsif cw_kod >= 71 and cw_kod <= 77 -%}{%- assign cw_kat = "snih" -%}
+  {%- elsif cw_kod == 85 or cw_kod == 86 -%}{%- assign cw_kat = "snih" -%}
+  {%- elsif cw_kod >= 95 and cw_kod <= 99 -%}{%- assign cw_kat = "bourka" -%}
+  {%- endif -%}
+
+  {%- comment -%} období meteorologicky podle měsíce {%- endcomment -%}
+  {%- assign cw_obd = "zima" -%}
+  {%- if cw_mesic >= 3 and cw_mesic <= 5 -%}{%- assign cw_obd = "jaro" -%}
+  {%- elsif cw_mesic >= 6 and cw_mesic <= 8 -%}{%- assign cw_obd = "leto" -%}
+  {%- elsif cw_mesic >= 9 and cw_mesic <= 11 -%}{%- assign cw_obd = "podzim" -%}
+  {%- endif -%}
+
+  {%- comment -%} obrázek zná jen den/noc, texty navíc ráno a večer podle hodiny {%- endcomment -%}
+  {%- assign cw_doba = "noc" -%}
+  {%- assign cw_doba_textu = "noc" -%}
+  {%- if cw_cur.is_day == 1 -%}
+    {%- assign cw_doba = "den" -%}
+    {%- assign cw_doba_textu = "den" -%}
+    {%- if cw_hodina < 9 -%}{%- assign cw_doba_textu = "rano" -%}
+    {%- elsif cw_hodina >= 18 -%}{%- assign cw_doba_textu = "vecer" -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- comment -%} teplota: pásmo a skloňování {%- endcomment -%}
+  {%- assign cw_t = cw_cur.temperature_2m | round -%}
+  {%- assign cw_t_abs = cw_t | abs -%}
+  {%- assign cw_pasmo = "horko" -%}
+  {%- if cw_t < 0 -%}{%- assign cw_pasmo = "mraz" -%}
+  {%- elsif cw_t <= 9 -%}{%- assign cw_pasmo = "zima" -%}
+  {%- elsif cw_t <= 17 -%}{%- assign cw_pasmo = "chladno" -%}
+  {%- elsif cw_t <= 25 -%}{%- assign cw_pasmo = "teplo" -%}
+  {%- endif -%}
+
+  {%- assign cw_teplota = cw_t_abs | append: "" -%}
+  {%- if cw_t < 0 -%}{%- assign cw_teplota = cw_teplota | prepend: "mínus " -%}{%- endif -%}
+  {%- assign cw_stupne = "stupňů" -%}
+  {%- if cw_t_abs == 1 -%}{%- assign cw_stupne = "stupeň" -%}
+  {%- elsif cw_t_abs >= 2 and cw_t_abs <= 4 -%}{%- assign cw_stupne = "stupně" -%}
+  {%- endif -%}
+
+  {%- comment -%} vítr v km/h {%- endcomment -%}
+  {%- assign cw_rychlost = cw_cur.wind_speed_10m | default: 0 | plus: 0 -%}
+  {%- assign cw_vitr = "slaby" -%}
+  {%- if cw_rychlost > 35 -%}{%- assign cw_vitr = "silny" -%}
+  {%- elsif cw_rychlost >= 15 -%}{%- assign cw_vitr = "stredni" -%}
+  {%- endif -%}
+
+  {%- assign cw_obrazek = cw_kat | append: "_" | append: cw_obd | append: "_" | append: cw_doba -%}
+
+  {%- comment -%}
+    Výběr vět: stabilní v rámci hodiny. Počasí = (den v roce × 24 + hodina) mod n;
+    oblečení a vítr kombinují den a hodinu jinými násobky, aby se nepárovaly stále stejné indexy.
+  {%- endcomment -%}
+  {%- assign cw_vety = IDX_1.pocasi[cw_kat][cw_doba_textu] -%}
+  {%- assign cw_n = cw_vety | size -%}
+  {%- if cw_n > 0 -%}
+    {%- assign cw_i = cw_den_v_roce | times: 24 | plus: cw_hodina | modulo: cw_n -%}
+    {%- assign cw_veta_pocasi = cw_vety[cw_i] -%}
+  {%- endif -%}
+
+  {%- assign cw_vety = IDX_1.obleceni[cw_pasmo] -%}
+  {%- assign cw_n = cw_vety | size -%}
+  {%- if cw_n > 0 -%}
+    {%- assign cw_a = cw_den_v_roce | times: 7 -%}
+    {%- assign cw_i = cw_hodina | times: 3 | plus: cw_a | plus: 5 | modulo: cw_n -%}
+    {%- assign cw_veta_obleceni = cw_vety[cw_i] -%}
+  {%- endif -%}
+
+  {%- if cw_vitr != "slaby" -%}
+    {%- assign cw_vety = IDX_1.vitr[cw_vitr] -%}
+    {%- assign cw_n = cw_vety | size -%}
+    {%- if cw_n > 0 -%}
+      {%- assign cw_a = cw_den_v_roce | times: 3 -%}
+      {%- assign cw_i = cw_hodina | times: 7 | plus: cw_a | plus: 11 | modulo: cw_n -%}
+      {%- assign cw_veta_vitr = cw_vety[cw_i] -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endif -%}

@@ -1,0 +1,19 @@
+# Konfigurace lokálního náhledu (trmnlp).
+---
+watch:
+  - .trmnlp.yml
+  - src
+
+# TRMNL předává šabloně čas uživatele; zařízení visí v ČR
+time_zone: Europe/Prague
+
+# hodnoty form fields pro lokální náhled (v cloudu je zadává uživatel)
+custom_fields:
+  latitude: "48.97"
+  longitude: "14.47"
+  # Adresa, kde je vystavena složka public/ (viz README, sekce Lokální náhled).
+  # Musí být zapsaná přímo: trmnlp doplňuje {{ env.X }} jen do polling URL, ne do hodnot pro šablonu.
+  base_url: "http://host.docker.internal:8000"
+
+variables:
+  trmnl: {}
