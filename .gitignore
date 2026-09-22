@@ -1,12 +1,8 @@
-# generované obrázky si každý vytváří sám (viz README)
+# originály z ChatGPT se necommitují (zpracovaná sada je v public/img/)
 raw/
-public/img/
-*.png
-*.webp
-!refs/*.png
-
-# náhledy a dočasné soubory testů
 preview*.png
+
+# dočasné soubory testů
 .test_samples/
 __pycache__/
 .DS_Store

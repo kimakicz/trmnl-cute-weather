@@ -16,7 +16,7 @@ Než začneš psát kód, přečti si toto zadání celé, prostuduj aktuální 
 cute-weather/
   README.md
   LICENSE                  # MIT
-  .gitignore               # public/img/, raw/, *.png mimo refs/
+  .gitignore               # raw/, preview*.png
   plugin/                  # TRMNL plugin = kořen trmnlp projektu
     .trmnlp.yml            # lokální náhled: custom_fields, time_zone
     bin/trmnlp             # spouští gem nebo Docker image trmnl/trmnlp
@@ -26,7 +26,7 @@ cute-weather/
     src/half_*.liquid, quadrant.liquid   # jen hláška „potřebuje celou obrazovku"
   public/                  # obsah pro statický hosting
     texty.json
-    img/                   # generované obrázky, NEcommitovat
+    img/                   # zpracovaná sada obrázků – commituje se (originály v raw/ ne)
   refs/                    # reference k promptům (postavička, základní krajina) – commitují se
   raw/                     # stažené vygenerované obrázky, NEcommitovat
   tools/
@@ -245,7 +245,7 @@ Výsledný text: `{věta počasí} Venku je {teplota} {stupeň/stupně/stupňů}
 
 - Co plugin dělá, snímek obrazovky (až bude).
 - Postup: vygenerovat referenční list postavičky → základní krajinu → `collect.py` → `process.py` → `build_matrix.py` → nahrát `public/` na hosting → vytvořit Private Plugin v TRMNL (polling URLs, form fields, markup) → refresh 60 min (TRMNL nabízí jen 15 / 60 / 360 / 720 / 1440 min; text se stejně mění po hodinách).
-- Obrázky nejsou součástí repa, každý si generuje vlastní sadu podle promptů.
+- Zpracovaná sada obrázků je v repu (`public/img/`), originály z ChatGPT ne; vlastní sadu lze vygenerovat podle promptů.
 - Atribuce dat Open-Meteo (CC BY 4.0).
 - Poznámka, že obrázky musí být dostupné z internetu, protože šablonu renderuje cloud TRMNL.
 

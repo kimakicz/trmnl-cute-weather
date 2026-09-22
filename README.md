@@ -13,16 +13,17 @@ oblečená a chová se podle aktuálního počasí, a pod ní krátký český t
 - Počasí: [Open-Meteo](https://open-meteo.com/), bez API klíče.
 - Obrázky a `texty.json` jsou statické soubory na veřejné URL, kterou zadáš v nastavení pluginu.
 
-**Obrázky nejsou součástí repozitáře.** Každý si generuje vlastní sadu podle promptů (`tools/prompts.py`).
-V `refs/` jsou jen dvě reference, které se k promptům přikládají.
+V `public/img/` je hotová sada obrázků pro displej (zatím jen den, noc používá denní obrázek).
+Originály z ChatGPT (`raw/`) se necommitují; vlastní sadu vygeneruješ podle promptů z `tools/prompts.py`
+s referencemi v `refs/`.
 
 ## Struktura
 
 ```
 plugin/            TRMNL plugin (projekt pro trmnlp): src/settings.yml, src/shared.liquid, src/full.liquid
-public/            obsah pro statický hosting: texty.json + img/ (img/ se necommituje)
+public/            obsah pro statický hosting: texty.json + img/ (hotová sada 56 + vychozi_den)
 refs/              referenční list postavičky a základní krajina pro generování
-raw/               stažené vygenerované obrázky (necommituje se)
+raw/               stažené originály z ChatGPT (necommituje se)
 samples/           ukázkové odpovědi Open-Meteo pro testy
 tools/             prompts.py, collect.py, process.py, build_matrix.py, validate_texts.py, test_samples.py
 ```
