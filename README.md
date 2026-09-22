@@ -3,7 +3,7 @@
 TRMNL plugin pro displej v dětském pokoji. Ukazuje ilustraci krajiny, ve které je holčička se psem
 oblečená a chová se podle aktuálního počasí, a pod ní krátký český text o počasí pro děti 4–8 let:
 
-> Sníh je měkký jako peřina, skoč do něj. Venku je **mínus 5** stupňů. Nezapomeň rukavice, ať prstíky nejsou studené jako rampouchy.
+> Sníh připomíná bílou peřinu rozprostřenou po zemi. Venku je **mínus 5** stupňů. Nezapomeň rukavice, ať prstíky nejsou studené jako rampouchy.
 
 *(snímek obrazovky doplníme, až bude hotová sada obrázků)*
 
@@ -145,6 +145,12 @@ Věty se vybírají indexem z dne v roce a hodiny, takže jsou v rámci hodiny s
 zobrazí se `vychozi_den.png` s neutrální větou; když chybí jen `texty.json`, zůstane správný obrázek a teplota.
 
 ## Texty
+
+Věty jsou krátké, hravé a srozumitelné dětem 4–8 let. Přirovnání mají vycházet ze známých věcí
+a dávat smysl. Texty neslibují vývoj počasí, který z aktuálních dat neznáme. U bouřky a silného větru
+nezlehčují nebezpečí ani strach dítěte; mohou nabídnout společnost dospělého nebo hraní doma.
+Věty o oblečení a větru se kombinují s každým druhem počasí, proto nemají předpokládat slunečno
+nebo konkrétní denní dobu. Tyto obsahové zásady je potřeba kontrolovat ručně.
 
 `public/texty.json` obsahuje 700 vět: počasí (7 kategorií × ráno/den/večer/noc × 20), oblečení (5 pásem × 20)
 a vítr (střední, silný × 20). Pravidla (max 12 slov, žádná čísla, žádné duplicity, max 3 stejné začátky
