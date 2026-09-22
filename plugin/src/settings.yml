@@ -1,7 +1,3 @@
-#
-# Nastavení Private Pluginu cute-weather (formát trmnlp / import-export TRMNL).
-# Docs: https://help.trmnl.com/en/articles/10542599-importing-and-exporting-private-plugins
-#
 ---
 strategy: polling
 no_screen_padding: 'yes'
@@ -9,28 +5,30 @@ dark_mode: 'no'
 static_data: ''
 polling_verb: get
 framework_version: latest
-# dvě URL oddělené koncem řádku: IDX_0 = Open-Meteo, IDX_1 = texty.json
+serverless_language:
 polling_url: |-
   https://api.open-meteo.com/v1/forecast?latitude={{ latitude }}&longitude={{ longitude }}&current=temperature_2m,weather_code,wind_speed_10m,is_day&timezone=Europe/Prague
   {{ base_url }}/texty.json
 polling_headers: ''
+polling_body:
+id: 484894
+custom_fields:
+- keyname: latitude
+  name: Zeměpisná šířka
+  field_type: number
+  step: 0.01
+  default: 48.97
+  description: Výchozí hodnota jsou České Budějovice.
+- keyname: longitude
+  name: Zeměpisná délka
+  field_type: number
+  step: 0.01
+  default: 14.47
+- keyname: base_url
+  name: Adresa s obrázky a texty
+  field_type: url
+  placeholder: https://example.com/cute-weather
+  description: Veřejná URL složky <code>public/</code> (obsahuje <code>texty.json</code> a <code>img/</code>), bez koncového lomítka.
 name: Cute Weather
 description: Počasí pro děti s ilustrací
 refresh_interval: 60
-custom_fields:
-  - keyname: latitude
-    name: Zeměpisná šířka
-    field_type: number
-    step: 0.01
-    default: 48.97
-    description: Výchozí hodnota jsou České Budějovice.
-  - keyname: longitude
-    name: Zeměpisná délka
-    field_type: number
-    step: 0.01
-    default: 14.47
-  - keyname: base_url
-    name: Adresa s obrázky a texty
-    field_type: url
-    placeholder: https://example.com/cute-weather
-    description: Veřejná URL složky <code>public/</code> (obsahuje <code>texty.json</code> a <code>img/</code>), bez koncového lomítka.
