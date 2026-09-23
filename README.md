@@ -3,7 +3,7 @@
 TRMNL plugin pro displej v dětském pokoji. Ukazuje ilustraci krajiny, ve které je holčička se psem
 oblečená a chová se podle aktuálního počasí, a pod ní krátký český text o počasí pro děti 4–8 let:
 
-> Sníh připomíná bílou peřinu rozprostřenou po zemi. Venku je **mínus 5** stupňů. Nezapomeň rukavice, ať prstíky nejsou studené jako rampouchy.
+> Zkus chytit vločku na rukáv. Stihneš si ji prohlédnout? Venku je **mínus 5** stupňů. Nezapomeň rukavice, ať prstíky nejsou studené jako rampouchy.
 
 *(snímek obrazovky doplníme, až bude hotová sada obrázků)*
 
@@ -146,14 +146,18 @@ zobrazí se `vychozi_den.png` s neutrální větou; když chybí jen `texty.json
 
 ## Texty
 
-Věty jsou krátké, hravé a srozumitelné dětem 4–8 let. Přirovnání mají vycházet ze známých věcí
-a dávat smysl. Texty neslibují vývoj počasí, který z aktuálních dat neznáme. U bouřky a silného větru
+Texty jsou krátké a srozumitelné dětem 4–8 let. Popisy počasí používají přirozenou mluvenou češtinu,
+konkrétní pozorování a občas drobný humor nebo námět k objevování. Zdrobněliny a přirovnání nejsou
+povinné; text má znít přirozeně i při čtení nahlas. Ranní text se může zobrazit před východem slunce,
+večerní před setměním i po něm. Texty neslibují vývoj počasí, který z aktuálních dat neznáme.
+U bouřky a silného větru
 nezlehčují nebezpečí ani strach dítěte; mohou nabídnout společnost dospělého nebo hraní doma.
 Věty o oblečení a větru se kombinují s každým druhem počasí, proto nemají předpokládat slunečno
 nebo konkrétní denní dobu. Tyto obsahové zásady je potřeba kontrolovat ručně.
 
-`public/texty.json` obsahuje 700 vět: počasí (7 kategorií × ráno/den/večer/noc × 20), oblečení (5 pásem × 20)
-a vítr (střední, silný × 20). Pravidla (max 12 slov, žádná čísla, žádné duplicity, max 3 stejné začátky
+`public/texty.json` obsahuje 420 textů: počasí (7 kategorií × ráno/den/večer/noc × 10), oblečení (5 pásem × 20)
+a vítr (střední, silný × 20). Text může mít i dvě krátké věty. Pravidla (max 12 slov na celý text,
+žádná čísla, žádné duplicity, max 3 stejné začátky
 ve skupině, oblečení neodporuje pásmu) hlídá:
 
 ```

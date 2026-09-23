@@ -12,7 +12,7 @@ DOBY = ["rano", "den", "vecer", "noc"]
 PASMA = ["mraz", "zima", "chladno", "teplo", "horko"]
 SILY = ["stredni", "silny"]   # slabý vítr se nezobrazuje
 
-POCET_VET = 20
+POCTY_VET = {"pocasi": 10, "obleceni": 20, "vitr": 20}
 MAX_SLOV = 12
 MAX_STEJNY_ZACATEK = 3
 
@@ -51,12 +51,12 @@ def zkontroluj_klice(nazev, slovnik, ocekavane, chyby):
     return True
 
 
-def zkontroluj_skupinu(nazev, vety, chyby, vsechny):
+def zkontroluj_skupinu(nazev, vety, chyby, vsechny, ocekavany_pocet):
     if not isinstance(vety, list):
         chyby.append(f"{nazev}: očekáván seznam vět")
         return
-    if len(vety) != POCET_VET:
-        chyby.append(f"{nazev}: {len(vety)} vět místo {POCET_VET}")
+    if len(vety) != ocekavany_pocet:
+        chyby.append(f"{nazev}: {len(vety)} vět místo {ocekavany_pocet}")
 
     zacatky = Counter()
     for i, veta in enumerate(vety, 1):
@@ -107,14 +107,18 @@ def main():
                 if zkontroluj_klice(f"pocasi.{kat}", doby, DOBY, chyby):
                     for doba in DOBY:
                         if doba in doby:
-                            zkontroluj_skupinu(f"pocasi.{kat}.{doba}", doby[doba], chyby, vsechny)
+                            zkontroluj_skupinu(
+                                f"pocasi.{kat}.{doba}", doby[doba], chyby, vsechny, POCTY_VET["pocasi"]
+                            )
 
         for sekce, klice in (("obleceni", PASMA), ("vitr", SILY)):
             obsah = data.get(sekce, {})
             if zkontroluj_klice(sekce, obsah, klice, chyby):
                 for klic in klice:
                     if klic in obsah:
-                        zkontroluj_skupinu(f"{sekce}.{klic}", obsah[klic], chyby, vsechny)
+                        zkontroluj_skupinu(
+                            f"{sekce}.{klic}", obsah[klic], chyby, vsechny, POCTY_VET[sekce]
+                        )
                         if sekce == "obleceni" and klic in ROZPORY and isinstance(obsah[klic], list):
                             for i, veta in enumerate(obsah[klic], 1):
                                 if isinstance(veta, str) and ROZPORY[klic].search(veta):

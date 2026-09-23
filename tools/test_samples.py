@@ -13,6 +13,7 @@ import functools
 import html
 import json
 import math
+import os
 import re
 import shutil
 import subprocess
@@ -24,7 +25,11 @@ from common import ROOT, TEXTY
 
 PLUGIN = ROOT / "plugin"
 SAMPLES = ROOT / "samples"
-WORK = ROOT / ".test_samples"
+# každý běh má vlastní, dosud neexistující podsložku, kterou mountujeme do kontejneru:
+# Docker Desktop po smazání a znovuvytvoření stejné cesty občas chvíli vidí starý
+# (prázdný) obsah a build pak selže; .test_samples/ samotnou proto nikdy nemažeme
+WORK_BASE = ROOT / ".test_samples"
+WORK = WORK_BASE / f"run-{os.getpid()}"
 NEUTRALNI = "Podívej se z okna, jaké je dnes venku počasí."
 DNY_PRED = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
 
@@ -190,7 +195,9 @@ def main():
     port = server.server_address[1]
     threading.Thread(target=server.serve_forever, daemon=True).start()
 
-    shutil.rmtree(WORK, ignore_errors=True)
+    for stary in WORK_BASE.glob("run-*"):
+        shutil.rmtree(stary, ignore_errors=True)
+    WORK.mkdir(parents=True)
     pripady = []    # (případ, vzorek, s_texty)
     for v in vzorky:
         pripady.append((v, v, True))

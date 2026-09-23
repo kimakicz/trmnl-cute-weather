@@ -206,14 +206,15 @@ Vygeneruj `public/texty.json` **ty sám** (Claude Code) s touto strukturou:
 
 ```json
 {
-  "pocasi":   { "<kategorie>": { "rano": [20 vět], "den": [20 vět], "vecer": [20 vět], "noc": [20 vět] } },
+  "pocasi":   { "<kategorie>": { "rano": [10 textů], "den": [10 textů], "vecer": [10 textů], "noc": [10 textů] } },
   "obleceni": { "<pasmo>": [20 vět] },
   "vitr":     { "stredni": [20 vět], "silny": [20 vět] }
 }
 ```
 
 Pravidla pro věty:
-- děti 4–8 let, spisovná čeština bez chyb, max 12 slov na větu,
+- děti 4–8 let, přirozená mluvená čeština bez chyb, max 12 slov na text (text může mít i dvě krátké věty),
+- popisy počasí: konkrétní pozorování, občas drobný humor nebo námět k objevování; zdrobněliny a přirovnání nejsou povinné (inspirace: vypravěčský tón Čapkova Povídání o pejskovi a kočičce a Dášeňky),
 - přirovnání z dětského světa (hračky, zvířátka, jídlo),
 - bouřka a silný vítr uklidňujícím tónem, nestrašit,
 - noc: klidné, uspávací věty,
