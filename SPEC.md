@@ -73,7 +73,7 @@ Datum, měsíc a hodinu ber z `IDX_0.current.time` (je v lokálním čase díky 
 
 **Doba (obrázek):** `is_day == 1` → `den`, jinak `noc`.
 
-**Doba (text):** `is_day == 0` → `noc`; jinak hodina < 9 → `rano`, hodina ≥ 18 → `vecer`, jinak `den`.
+**Doba (text):** podle hodiny z `current.time`: 21–4 → `noc`, 5–8 → `rano` (i před východem slunce, aby ranní text nečekal na `is_day`), 18–20 nebo `is_day == 0` (zimní odpoledne) → `vecer`, jinak `den`.
 
 **Období** (meteorologicky podle měsíce): 12–2 `zima`, 3–5 `jaro`, 6–8 `leto`, 9–11 `podzim`.
 

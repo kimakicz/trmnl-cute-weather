@@ -56,15 +56,16 @@
   {%- elsif cw_mesic >= 9 and cw_mesic <= 11 -%}{%- assign cw_obd = "podzim" -%}
   {%- endif -%}
 
-  {%- comment -%} obrázek zná jen den/noc, texty navíc ráno a večer podle hodiny {%- endcomment -%}
+  {%- comment -%}
+    Obrázek zná jen den/noc podle is_day. Text se řídí hodinou (ráno má být ranní i před
+    východem slunce), is_day jen dorovná zimní tmu odpoledne na večer.
+  {%- endcomment -%}
   {%- assign cw_doba = "noc" -%}
-  {%- assign cw_doba_textu = "noc" -%}
-  {%- if cw_cur.is_day == 1 -%}
-    {%- assign cw_doba = "den" -%}
-    {%- assign cw_doba_textu = "den" -%}
-    {%- if cw_hodina < 9 -%}{%- assign cw_doba_textu = "rano" -%}
-    {%- elsif cw_hodina >= 18 -%}{%- assign cw_doba_textu = "vecer" -%}
-    {%- endif -%}
+  {%- if cw_cur.is_day == 1 -%}{%- assign cw_doba = "den" -%}{%- endif -%}
+  {%- assign cw_doba_textu = "den" -%}
+  {%- if cw_hodina < 5 or cw_hodina >= 21 -%}{%- assign cw_doba_textu = "noc" -%}
+  {%- elsif cw_hodina < 9 -%}{%- assign cw_doba_textu = "rano" -%}
+  {%- elsif cw_hodina >= 18 or cw_doba == "noc" -%}{%- assign cw_doba_textu = "vecer" -%}
   {%- endif -%}
 
   {%- comment -%} teplota: pásmo a skloňování {%- endcomment -%}

@@ -78,9 +78,14 @@ def ocekavani(vzorek, texty):
     obd = {12: "zima", 1: "zima", 2: "zima", 3: "jaro", 4: "jaro", 5: "jaro",
            6: "leto", 7: "leto", 8: "leto"}.get(mesic, "podzim")
     doba = "den" if cur["is_day"] == 1 else "noc"
-    doba_textu = doba
-    if doba == "den":
-        doba_textu = "rano" if hodina < 9 else "vecer" if hodina >= 18 else "den"
+    if hodina < 5 or hodina >= 21:
+        doba_textu = "noc"
+    elif hodina < 9:
+        doba_textu = "rano"
+    elif hodina >= 18 or doba == "noc":
+        doba_textu = "vecer"
+    else:
+        doba_textu = "den"
 
     t = zaokrouhli(cur["temperature_2m"])
     pasmo = "mraz" if t < 0 else "zima" if t <= 9 else "chladno" if t <= 17 else "teplo" if t <= 25 else "horko"

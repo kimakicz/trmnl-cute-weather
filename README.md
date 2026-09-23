@@ -135,7 +135,7 @@ Plugin zatím podporuje jen layout **full**.
 | kategorie | WMO `weather_code`: 0 jasno · 1–2 polojasno · 3 zataženo · 45, 48 mlha · 51–67, 80–82 déšť · 71–77, 85–86 sníh · 95–99 bouřka · jiné zataženo |
 | období | podle měsíce: 12–2 zima, 3–5 jaro, 6–8 léto, 9–11 podzim |
 | obrázek | `{kategorie}_{obdobi}_{den\|noc}.png`, den/noc podle `is_day` |
-| doba textu | `is_day = 0` → noc, jinak do 9 h ráno, od 18 h večer, jinak den |
+| doba textu | podle hodiny: 21–4 noc · 5–8 ráno · 18–20 nebo tma během dne (zimní odpoledne) večer · jinak den |
 | teplotní pásmo | mráz < 0 · zima 0–9 · chladno 10–17 · teplo 18–25 · horko > 25 (zaokrouhlená teplota) |
 | vítr | slabý < 15 km/h (nic se nepíše) · střední 15–35 · silný > 35 |
 | text | `{věta počasí} Venku je {teplota} {stupeň/stupně/stupňů}. {věta oblečení} {věta o větru}` |
