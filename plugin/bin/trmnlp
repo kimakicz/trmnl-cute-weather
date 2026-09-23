@@ -15,7 +15,7 @@ mkdir -p "$CONFIG_DIR"
 
 if command -v docker &> /dev/null
 then
-    TTY=""; [ -t 0 ] && TTY="-it"
+    TTY="-i"; [ -t 0 ] && TTY="-it"   # stdin vždy (kvůli potvrzení u push), TTY jen v terminálu
     docker run $TTY --rm \
         --publish 4567:4567 \
         --volume "$(pwd):/plugin" \
