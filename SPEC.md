@@ -45,7 +45,7 @@ cute-weather/
 Open-Meteo, bez klíče:
 
 ```
-https://api.open-meteo.com/v1/forecast?latitude={{ latitude }}&longitude={{ longitude }}&current=temperature_2m,weather_code,wind_speed_10m,is_day&timezone=Europe/Prague
+https://api.open-meteo.com/v1/forecast?latitude={{ latitude }}&longitude={{ longitude }}&current=temperature_2m,weather_code,wind_speed_10m,is_day&hourly=weather_code&daily=weather_code,temperature_2m_max&forecast_days=2&timezone=Europe/Prague
 ```
 
 Polling URLs (dva řádky, v tomto pořadí):
@@ -183,7 +183,7 @@ Z `raw/` do `public/img/`:
 4. jemné doostření po zvětšení (`UnsharpMask(radius=1.5, percent=60, threshold=2)`, přepínač `--no-sharpen`),
 5. volitelná korekce středních tónů `--gamma` (výchozí `1.0` = beze změny; hodnoty 0.8–0.9 zesvětlí, pokud bude obrázek na panelu působit ztmavle — doladit až podle skutečného displeje),
 6. kvantizace do **pevné palety 16 rovnoměrných úrovní šedi** displeje (0, 17, 34 … 255), dithering volitelný přepínačem (`--dither none|fs|bayer`, výchozí `fs`),
-7. uložení jako 8bit PNG v režimu `L` s `optimize=True`,
+7. uložení jako 4bit PNG s paletou 16 šedí (indexy 0–15 = úrovně 0, 17 … 255) s `optimize=True`; obsah je totožný s 8bit šedí, soubor menší,
 8. volitelně `--preview`: vygeneruje kontaktní arch všech obrázků pro kontrolu.
 
 Poznámky ke kvantizaci (ověřeno na vzorech `leto-vzor.png` a `zima-vzor.png`):
@@ -194,7 +194,7 @@ Poznámky ke kvantizaci (ověřeno na vzorech `leto-vzor.png` a `zima-vzor.png`)
 - `none`: zaokrouhlení na nejbližší úroveň (`round(v / 17) * 17`), `bayer`: uspořádaný dithering maticí 8×8 s amplitudou jednoho kroku (17) před zaokrouhlením.
 - Výstup musí obsahovat jen hodnoty z množiny {0, 17, … 255}; `process.py` to po uložení ověří.
 
-`process.py` zpracovává dávkově `raw/` → `public/img/` a u každého obrázku vypíše odhad velikosti výsledného 4bit snímku (limit TRMNL X je 750 kB; FS dithering vychází na cca 660–700 kB, `bayer` a `none` méně).
+`process.py` zpracovává dávkově `raw/` → `public/img/` a u každého obrázku vypíše odhad velikosti výsledného 4bit snímku (limit TRMNL X je 750 kB; se současnou sadou a FS ditheringem vychází samotný obrázek na 670–805 kB, `bayer` a `none` méně).
 
 Ověřeno renderem přes `trmnlp` v rozlišení 1872×1404: obrázek se v šabloně vykreslí přesně 1:1 (100% shoda pixelů se zdrojem), dithering se tedy cestou nerozmaže.
 
@@ -208,7 +208,12 @@ Vygeneruj `public/texty.json` **ty sám** (Claude Code) s touto strukturou:
 {
   "pocasi":   { "<kategorie>": { "rano": [10 textů], "den": [10 textů], "vecer": [10 textů], "noc": [10 textů] } },
   "obleceni": { "<pasmo>": [20 vět] },
-  "vitr":     { "stredni": [20 vět], "silny": [20 vět] }
+  "vitr":     { "stredni": [20 vět], "silny": [20 vět] },
+  "predpoved": {
+    "pozdeji":  { "dest": [5], "snih": [5], "bourka": [5] },   // s {kdy} nebo {Kdy}
+    "otepleni": [5],                                           // s {teplota} {stupne}
+    "zitra":    { "<kategorie>": [5] }                         // s {teplota} {stupne}
+  }
 }
 ```
 
@@ -218,7 +223,7 @@ Pravidla pro věty:
 - přirovnání z dětského světa (hračky, zvířátka, jídlo),
 - bouřka a silný vítr uklidňujícím tónem, nestrašit,
 - noc: klidné, uspávací věty,
-- žádná čísla ani teploty v textu,
+- žádná čísla ani teploty v textu (u předpovědi je doplní šablona za `{teplota} {stupne}`),
 - ve skupině se věty nesmí opakovat a nesmí víc než 3× začínat stejným slovem,
 - věty o oblečení nesmí odporovat počasí (v `horko` nezmiňovat bundu apod.) a nesmí záviset na slunci ani posílat dítě ven – kombinují se s libovolným počasím včetně bouřky a noci,
 - věty o počasí netvrdí nic o teplotě ani ročním období (teplotu řeší jen `obleceni`).
@@ -227,7 +232,9 @@ Pravidla pro věty:
 
 ## 5. Liquid šablona
 
-Výsledný text: `{věta počasí} Venku je {teplota} {stupeň/stupně/stupňů}. {věta oblečení}` a pokud je vítr `stredni` nebo `silny`, přidej ještě větu o větru.
+Výsledný text: `{věta počasí} Venku je {teplota} {stupeň/stupně/stupňů}. {věta oblečení}` a pokud je vítr `stredni` nebo `silny`, přidej ještě větu o větru. Na konec případně větu předpovědi.
+
+- Předpověď (nejvýš jedna věta, z `hourly` a `daily`): 5–17 h první srážky (kód ≥ 51) později dnes do 19 h, pokud teď neprší ani nesněží (`{kdy}` = dopoledne < 12 h · odpoledne < 18 h · večer); jinak do 13 h oteplení, pokud je dnešní maximum aspoň o 4 °C vyšší; 18–23 h počasí a maximum zítřka (`daily[1]`), 0–4 h dneška (`daily[0]`). Hodinový index se hledá podle `current.time` (bývá i `22:15`), ne podle hodiny. Když `hourly`/`daily` chybí, věta se vynechá. Index věty (hodina × 2 + den × 7 + 1) mod n; násobek dne nesoudělný s počtem vět (5), jinak by se věta měnila jen s hodinou.
 
 - Skloňování: absolutní hodnota 1 → stupeň, 2–4 → stupně, jinak stupňů. Záporné teploty „mínus 3 stupně".
 - Výběr věty: počasí index = (den v roce × 24 + hodina) mod n; oblečení (hodina × 3 + den × 7 + 5) mod n; vítr (hodina × 7 + den × 3 + 11) mod n. Různé násobky místo pouhého posunu, aby se nepárovaly stále stejné indexy. V rámci jedné hodiny musí být text stabilní. Den v roce se počítá z `current.time` ručně (bez filtru `date`, který může přepočítávat časovou zónu).

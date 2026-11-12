@@ -7,7 +7,7 @@ polling_verb: get
 framework_version: latest
 serverless_language:
 polling_url: |-
-  https://api.open-meteo.com/v1/forecast?latitude={{ latitude }}&longitude={{ longitude }}&current=temperature_2m,weather_code,wind_speed_10m,is_day&timezone=Europe/Prague
+  https://api.open-meteo.com/v1/forecast?latitude={{ latitude }}&longitude={{ longitude }}&current=temperature_2m,weather_code,wind_speed_10m,is_day&hourly=weather_code&daily=weather_code,temperature_2m_max&forecast_days=2&timezone=Europe/Prague
   {{ base_url }}/texty.json
 polling_headers: ''
 polling_body:

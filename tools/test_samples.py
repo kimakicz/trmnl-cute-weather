@@ -41,7 +41,7 @@ TRIDY_TRMNL_X = """
 """
 
 # vzorky renderované navíc s nedostupným texty.json
-BEZ_TEXTU = ["snih_den_zima_minus5"]
+BEZ_TEXTU = ["snih_den_zima_minus5", "predpoved_zitra_vecer_minus1"]
 
 
 class TichyHandler(SimpleHTTPRequestHandler):
@@ -68,6 +68,56 @@ def kategorie(kod):
     if 95 <= kod <= 99:
         return "bourka"
     return "zatazeno"
+
+
+def stupne_slovo(t):
+    return "stupeň" if abs(t) == 1 else "stupně" if 2 <= abs(t) <= 4 else "stupňů"
+
+
+def predpoved(vzorek, texty, kod, t, cas, hodina, den_v_roce):
+    """Věta předpovědi a hodnota data-predpoved (obojí prázdné, když se nic nehlásí)."""
+    hourly, daily = vzorek.get("hourly") or {}, vzorek.get("daily") or {}
+    datum = cas[:10]
+
+    def z(seznam, i):
+        return seznam[i] if i < len(seznam) else None
+
+    dnes = z(daily.get("time", []), 0)
+    druh, kat, h, pt = "", "", -1, 0
+    if 5 <= hodina < 18:
+        if kod < 51:
+            casy, kody = hourly.get("time", []), hourly.get("weather_code", [])
+            start = next((i for i, x in enumerate(casy) if x[:13] == cas[:13]), -1)
+            if start >= 0:
+                for j in range(start + 1, len(casy)):
+                    hh = int(casy[j][11:13])
+                    if casy[j][:10] != datum or hh > 19:
+                        break
+                    k = z(kody, j) or 0
+                    if k >= 51:
+                        druh, h = "pozdeji", hh
+                        kat = "bourka" if k >= 95 else "snih" if 71 <= k <= 77 or k in (85, 86) else "dest"
+                        break
+        if not druh and hodina < 14 and dnes == datum:
+            mx = z(daily.get("temperature_2m_max", []), 0)
+            if mx is not None and zaokrouhli(mx) - t >= 4:
+                druh, pt = "otepleni", zaokrouhli(mx)
+    elif dnes == datum:
+        di = 1 if hodina >= 18 else 0
+        dk, mx = z(daily.get("weather_code", []), di), z(daily.get("temperature_2m_max", []), di)
+        if dk is not None and mx is not None:
+            druh, pt, kat = "zitra", zaokrouhli(mx), kategorie(dk)
+
+    if not druh or not texty:
+        return "", ""
+    pp = texty["predpoved"]
+    vety = pp["otepleni"] if druh == "otepleni" else pp[druh][kat]
+    veta = vety[(hodina * 2 + den_v_roce * 7 + 1) % len(vety)]
+    kdy = "dopoledne" if h < 12 else "odpoledne" if h < 18 else "večer"
+    teplota = f"mínus {abs(pt)}" if pt < 0 else str(pt)
+    veta = (veta.replace("{Kdy}", kdy.capitalize()).replace("{kdy}", kdy)
+            .replace("{teplota}", teplota).replace("{stupne}", stupne_slovo(pt)))
+    return veta, f"{druh}:{kat}:{h if druh == 'pozdeji' else pt}"
 
 
 def ocekavani(vzorek, texty):
@@ -113,9 +163,12 @@ def ocekavani(vzorek, texty):
         if vitr != "slaby":
             vety = texty["vitr"][vitr]
             casti.append(vety[(hodina * 7 + den_v_roce * 3 + 11) % len(vety)])
+    veta_pr, pr = predpoved(vzorek, texty, cur["weather_code"], t, cas, hodina, den_v_roce)
+    if veta_pr:
+        casti.append(veta_pr)
 
     return {"obrazek": f"{kat}_{obd}_{doba}", "text": " ".join(casti), "kat": kat, "obdobi": obd,
-            "doba": doba, "doba-textu": doba_textu, "pasmo": pasmo, "vitr": vitr}
+            "doba": doba, "doba-textu": doba_textu, "pasmo": pasmo, "vitr": vitr, "predpoved": pr}
 
 
 def priprav(pripad, vzorek, host, port, s_texty=True, png=False):
@@ -222,7 +275,7 @@ def main():
                 problemy.append(f"src obrázku: {vysledek['src']}")
             if not (ROOT / "public" / "img" / f"{ocek['obrazek']}.png").exists():
                 problemy.append(f"public/img/{ocek['obrazek']}.png neexistuje (spusť build_matrix.py)")
-            for klic in ("kat", "obdobi", "doba", "doba-textu", "pasmo", "vitr"):
+            for klic in ("kat", "obdobi", "doba", "doba-textu", "pasmo", "vitr", "predpoved"):
                 if klic in ocek and vysledek["atributy"].get(klic) != ocek[klic]:
                     problemy.append(f"{klic}: {vysledek['atributy'].get(klic)} ≠ {ocek[klic]}")
             if vysledek["text"] != ocek["text"]:

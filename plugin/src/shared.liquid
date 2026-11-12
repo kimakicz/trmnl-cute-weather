@@ -1,9 +1,9 @@
 {%- comment -%}
   cute-weather – klasifikace počasí a výběr vět.
-  Vstup:  IDX_0 = Open-Meteo (current), IDX_1 = texty.json, form field base_url.
+  Vstup:  IDX_0 = Open-Meteo (current, hourly, daily), IDX_1 = texty.json, form field base_url.
   Výstup: cw_ok, cw_obrazek, cw_veta_pocasi, cw_teplota, cw_stupne,
-          cw_veta_obleceni, cw_veta_vitr (+ cw_kat, cw_obd, cw_doba, cw_doba_textu,
-          cw_pasmo, cw_vitr pro ladění a testy).
+          cw_veta_obleceni, cw_veta_vitr, cw_veta_predpoved (+ cw_kat, cw_obd, cw_doba, cw_doba_textu,
+          cw_pasmo, cw_vitr, cw_predpoved pro ladění a testy).
   Pozor: Liquid vyhodnocuje and/or zprava doleva, podmínky proto nemíchají oba operátory.
 {%- endcomment -%}
 
@@ -26,6 +26,8 @@
 {%- assign cw_veta_pocasi = "Podívej se z okna, jaké je dnes venku počasí." -%}
 {%- assign cw_veta_obleceni = "" -%}
 {%- assign cw_veta_vitr = "" -%}
+{%- assign cw_veta_predpoved = "" -%}
+{%- assign cw_predpoved = "" -%}
 
 {%- if cw_ok -%}
   {%- comment -%} čas bereme z Open-Meteo (lokální díky timezone=Europe/Prague), ne z 'now' {%- endcomment -%}
@@ -120,6 +122,111 @@
       {%- assign cw_a = cw_den_v_roce | times: 3 -%}
       {%- assign cw_i = cw_hodina | times: 7 | plus: cw_a | plus: 11 | modulo: cw_n -%}
       {%- assign cw_veta_vitr = cw_vety[cw_i] -%}
+    {%- endif -%}
+  {%- endif -%}
+  {%- comment -%}
+    Předpověď (hourly + daily z IDX_0, věty z IDX_1.predpoved). Nejvýš jedna věta:
+    5–17 h: srážky později dnes (do 19 h), jinak oteplení o 4 a více stupňů (jen do 13 h);
+    18–23 h zítřek (daily[1]), 0–4 h dnešek (daily[0]), který je pro dítě pořád „zítra“.
+    Hodinový index se hledá podle času, ne podle hodiny (current.time bývá i 22:15).
+  {%- endcomment -%}
+  {%- assign cw_pp = IDX_1.predpoved -%}
+  {%- assign cw_datum = cw_cas | slice: 0, 10 -%}
+  {%- assign cw_pr_druh = "" -%}
+  {%- assign cw_pr_kat = "" -%}
+  {%- assign cw_pr_h = -1 -%}
+  {%- assign cw_pr_t = 0 -%}
+  {%- assign cw_dnes_den = IDX_0.daily.time[0] | append: "" -%}
+  {%- if cw_hodina >= 5 and cw_hodina < 18 -%}
+    {%- if cw_kod < 51 -%}
+      {%- assign cw_klic = cw_cas | slice: 0, 13 -%}
+      {%- assign cw_start = -1 -%}
+      {%- for cw_ht in IDX_0.hourly.time -%}
+        {%- assign cw_ht13 = cw_ht | slice: 0, 13 -%}
+        {%- if cw_ht13 == cw_klic -%}{%- assign cw_start = forloop.index0 -%}{%- break -%}{%- endif -%}
+      {%- endfor -%}
+      {%- if cw_start >= 0 -%}
+        {%- assign cw_od = cw_start | plus: 1 -%}
+        {%- for cw_ht in IDX_0.hourly.time offset: cw_od -%}
+          {%- assign cw_hd = cw_ht | slice: 0, 10 -%}
+          {%- assign cw_hh = cw_ht | slice: 11, 2 | plus: 0 -%}
+          {%- if cw_hd != cw_datum or cw_hh > 19 -%}{%- break -%}{%- endif -%}
+          {%- assign cw_j = forloop.index0 | plus: cw_od -%}
+          {%- assign cw_hk = IDX_0.hourly.weather_code[cw_j] | default: 0 | plus: 0 -%}
+          {%- if cw_hk >= 51 -%}
+            {%- assign cw_pr_druh = "pozdeji" -%}
+            {%- assign cw_pr_h = cw_hh -%}
+            {%- assign cw_pr_kat = "dest" -%}
+            {%- if cw_hk >= 95 -%}{%- assign cw_pr_kat = "bourka" -%}
+            {%- elsif cw_hk >= 71 and cw_hk <= 77 -%}{%- assign cw_pr_kat = "snih" -%}
+            {%- elsif cw_hk == 85 or cw_hk == 86 -%}{%- assign cw_pr_kat = "snih" -%}
+            {%- endif -%}
+            {%- break -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+    {%- endif -%}
+    {%- if cw_pr_druh == "" and cw_hodina < 14 and cw_dnes_den == cw_datum -%}
+      {%- assign cw_max = IDX_0.daily.temperature_2m_max[0] -%}
+      {%- if cw_max != nil -%}
+        {%- assign cw_max = cw_max | round -%}
+        {%- assign cw_rozdil = cw_max | minus: cw_t -%}
+        {%- if cw_rozdil >= 4 -%}
+          {%- assign cw_pr_druh = "otepleni" -%}
+          {%- assign cw_pr_t = cw_max -%}
+        {%- endif -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- elsif cw_dnes_den == cw_datum -%}
+    {%- assign cw_di = 0 -%}
+    {%- if cw_hodina >= 18 -%}{%- assign cw_di = 1 -%}{%- endif -%}
+    {%- assign cw_dk = IDX_0.daily.weather_code[cw_di] -%}
+    {%- assign cw_max = IDX_0.daily.temperature_2m_max[cw_di] -%}
+    {%- if cw_dk != nil and cw_max != nil -%}
+      {%- assign cw_dk = cw_dk | plus: 0 -%}
+      {%- assign cw_pr_druh = "zitra" -%}
+      {%- assign cw_pr_t = cw_max | round -%}
+      {%- assign cw_pr_kat = "zatazeno" -%}
+      {%- if cw_dk == 0 -%}{%- assign cw_pr_kat = "jasno" -%}
+      {%- elsif cw_dk == 1 or cw_dk == 2 -%}{%- assign cw_pr_kat = "polojasno" -%}
+      {%- elsif cw_dk == 45 or cw_dk == 48 -%}{%- assign cw_pr_kat = "mlha" -%}
+      {%- elsif cw_dk >= 51 and cw_dk <= 67 -%}{%- assign cw_pr_kat = "dest" -%}
+      {%- elsif cw_dk >= 80 and cw_dk <= 82 -%}{%- assign cw_pr_kat = "dest" -%}
+      {%- elsif cw_dk >= 71 and cw_dk <= 77 -%}{%- assign cw_pr_kat = "snih" -%}
+      {%- elsif cw_dk == 85 or cw_dk == 86 -%}{%- assign cw_pr_kat = "snih" -%}
+      {%- elsif cw_dk >= 95 and cw_dk <= 99 -%}{%- assign cw_pr_kat = "bourka" -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- assign cw_vety = nil -%}
+  {%- if cw_pr_druh == "pozdeji" -%}{%- assign cw_vety = cw_pp.pozdeji[cw_pr_kat] -%}
+  {%- elsif cw_pr_druh == "otepleni" -%}{%- assign cw_vety = cw_pp.otepleni -%}
+  {%- elsif cw_pr_druh == "zitra" -%}{%- assign cw_vety = cw_pp.zitra[cw_pr_kat] -%}
+  {%- endif -%}
+  {%- assign cw_n = cw_vety | size -%}
+  {%- if cw_n > 0 -%}
+    {%- assign cw_a = cw_den_v_roce | times: 7 -%}
+    {%- assign cw_i = cw_hodina | times: 2 | plus: cw_a | plus: 1 | modulo: cw_n -%}
+    {%- assign cw_veta_predpoved = cw_vety[cw_i] -%}
+    {%- assign cw_kdy = "večer" -%}
+    {%- if cw_pr_h < 12 -%}{%- assign cw_kdy = "dopoledne" -%}
+    {%- elsif cw_pr_h < 18 -%}{%- assign cw_kdy = "odpoledne" -%}
+    {%- endif -%}
+    {%- assign cw_kdy_velke = cw_kdy | capitalize -%}
+    {%- assign cw_pt_abs = cw_pr_t | abs -%}
+    {%- assign cw_pt = cw_pt_abs | append: "" -%}
+    {%- if cw_pr_t < 0 -%}{%- assign cw_pt = cw_pt | prepend: "mínus " -%}{%- endif -%}
+    {%- assign cw_pst = "stupňů" -%}
+    {%- if cw_pt_abs == 1 -%}{%- assign cw_pst = "stupeň" -%}
+    {%- elsif cw_pt_abs >= 2 and cw_pt_abs <= 4 -%}{%- assign cw_pst = "stupně" -%}
+    {%- endif -%}
+    {%- assign cw_veta_predpoved = cw_veta_predpoved | replace: "{Kdy}", cw_kdy_velke | replace: "{kdy}", cw_kdy | replace: "{teplota}", cw_pt | replace: "{stupne}", cw_pst -%}
+    {%- assign cw_predpoved = cw_pr_druh | append: ":" | append: cw_pr_kat | append: ":" -%}
+    {%- if cw_pr_druh == "pozdeji" -%}
+      {%- assign cw_predpoved = cw_predpoved | append: cw_pr_h -%}
+    {%- else -%}
+      {%- assign cw_predpoved = cw_predpoved | append: cw_pr_t -%}
     {%- endif -%}
   {%- endif -%}
 {%- endif -%}

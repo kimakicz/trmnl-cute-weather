@@ -2,7 +2,7 @@
 """Převod obrázků z raw/ do public/img/ pro TRMNL X (1872×1404, 16 odstínů šedi).
 
 Postup: šeď → středový ořez na 4:3 + resize → autokontrast → doostření → gamma
-→ kvantizace do pevné palety 16 rovnoměrných šedí (0, 17, … 255).
+→ kvantizace do pevné palety 16 rovnoměrných šedí (0, 17, … 255) → uložení jako 4bit PNG.
 """
 
 import argparse
@@ -60,6 +60,20 @@ def kvantizuj(im, dither):
     return im.point(lambda v: min(15, (v + KROK // 2) // KROK) * KROK)
 
 
+def uloz_4bit(im, cil):
+    """Uloží šedý obrázek s úrovněmi z UROVNE jako 4bit PNG s paletou 16 šedí.
+
+    Obsah je stejný jako u 8bit šedi, soubor ale vychází zhruba poloviční.
+    """
+    navic = {v for _, v in im.getcolors()} - set(UROVNE)
+    if navic:
+        raise ValueError(f"{cil}: obrázek obsahuje úrovně mimo paletu: {sorted(navic)}")
+    indexy = im.point(lambda v: v // KROK)          # 0, 17, … 255 → 0 … 15
+    q = Image.frombytes("P", im.size, indexy.tobytes())
+    q.putpalette([v for v in UROVNE for _ in range(3)])
+    q.save(cil, optimize=True, bits=4)
+
+
 def na_trmnl(cesta, cil, dither="fs", autocontrast=True, sharpen=True, gamma=1.0):
     im = Image.open(cesta).convert("L")
     im = ImageOps.fit(im, (SIRKA, VYSKA), Image.LANCZOS)    # středový ořez na 4:3 + resize
@@ -69,10 +83,9 @@ def na_trmnl(cesta, cil, dither="fs", autocontrast=True, sharpen=True, gamma=1.0
         im = im.filter(ImageFilter.UnsharpMask(radius=1.5, percent=60, threshold=2))
     if gamma != 1.0:
         im = im.point(lambda v: round(255 * (v / 255) ** gamma))
-    im = kvantizuj(im, dither)
-    im.save(cil, optimize=True)
+    uloz_4bit(kvantizuj(im, dither), cil)
 
-    navic = {v for _, v in Image.open(cil).getcolors()} - set(UROVNE)
+    navic = {v for _, v in Image.open(cil).convert("L").getcolors()} - set(UROVNE)
     if navic:
         raise ValueError(f"{cil}: výstup obsahuje úrovně mimo paletu: {sorted(navic)}")
 

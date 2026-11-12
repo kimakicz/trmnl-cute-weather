@@ -508,5 +508,88 @@
       "Doma si můžeme číst, zatímco venku fičí.",
       "Takový vítr! Hraní venku dnes počká."
     ]
+  },
+  "predpoved": {
+    "pozdeji": {
+      "dest": [
+        "{Kdy} asi začne pršet, deštník ať je po ruce.",
+        "Na {kdy} se chystá déšť, holínky čekají v předsíni.",
+        "Mraky si šeptají, že {kdy} spadnou kapky.",
+        "{Kdy} přijde déšť. Pláštěnka se bude hodit.",
+        "Pejsek větří, že {kdy} bude pršet."
+      ],
+      "snih": [
+        "{Kdy} má začít sněžit, tak se dívej z okna.",
+        "Na {kdy} se chystají vločky. Rukavice připrav!",
+        "Mraky nesou sníh, {kdy} možná napadne.",
+        "Pejsek se těší, že {kdy} bude sněžit.",
+        "{Kdy} se snesou vločky, bílé jako cukr."
+      ],
+      "bourka": [
+        "{Kdy} může přijít bouřka, to bude lepší být doma.",
+        "Na {kdy} se chystá bouřka s hromy a blesky.",
+        "Nebe {kdy} možná zabouří, pak honem pod střechu.",
+        "{Kdy} bude asi hřmít. Pejsek se schová pod stůl.",
+        "Pozor, {kdy} se možná přižene bouřka."
+      ]
+    },
+    "otepleni": [
+      "Odpoledne se oteplí až na {teplota} {stupne}.",
+      "Pak se ještě oteplí, až na {teplota} {stupne}.",
+      "Během dne vyleze teplota až na {teplota} {stupne}.",
+      "Později bude tepleji, až {teplota} {stupne}.",
+      "Teploměr dnes ještě povyroste, až na {teplota} {stupne}."
+    ],
+    "zitra": {
+      "jasno": [
+        "Zítra má svítit sluníčko, teploměr ukáže {teplota} {stupne}.",
+        "Zítra bude jasno a teploměr ukáže {teplota} {stupne}.",
+        "Na zítřek se chystá modré nebe a {teplota} {stupne}.",
+        "Sluníčko slibuje, že zítra přijde, a s ním {teplota} {stupne}.",
+        "Až se vyspíš, bude jasno. Přes den {teplota} {stupne}."
+      ],
+      "polojasno": [
+        "Zítra bude chvíli slunce, chvíli mráček, a {teplota} {stupne}.",
+        "Na zítřek se chystá polojasno, přes den {teplota} {stupne}.",
+        "Zítra si slunce zahraje s mraky na schovávanou, přes den {teplota} {stupne}.",
+        "Až se vyspíš, bude polojasno a {teplota} {stupne}.",
+        "Mráčky zítra sem tam schovají sluníčko. Přes den {teplota} {stupne}."
+      ],
+      "zatazeno": [
+        "Zítra bude zataženo a přes den {teplota} {stupne}.",
+        "Na zítřek se chystá šedé nebe, teploměr ukáže {teplota} {stupne}.",
+        "Zítra mraky přikryjí nebe jako peřina, přes den {teplota} {stupne}.",
+        "Až se vyspíš, bude nebe schované za mraky. Přes den {teplota} {stupne}.",
+        "Mraky si zítra nebe nechají pro sebe, přes den {teplota} {stupne}."
+      ],
+      "dest": [
+        "Zítra bude pršet, tak připrav deštník. Přes den {teplota} {stupne}.",
+        "Na zítřek se chystají kaluže a {teplota} {stupne}.",
+        "Zítra si obuj holínky, bude pršet. Teploměr ukáže {teplota} {stupne}.",
+        "Až se vyspíš, bude asi pršet. Přes den {teplota} {stupne}.",
+        "Mraky na zítřek chystají déšť a {teplota} {stupne}."
+      ],
+      "snih": [
+        "Zítra má sněžit! Teploměr ukáže {teplota} {stupne}.",
+        "Na zítřek se chystají vločky a {teplota} {stupne}.",
+        "Zítra možná postavíš sněhuláka. Teploměr ukáže {teplota} {stupne}.",
+        "Až se vyspíš, může být venku bílo. Přes den {teplota} {stupne}.",
+        "Mraky zítra nasypou sníh jako mouku, přes den {teplota} {stupne}."
+      ],
+      "bourka": [
+        "Zítra může přijít bouřka. Teploměr ukáže {teplota} {stupne}.",
+        "Na zítřek se chystá bouřka, teploměr ukáže {teplota} {stupne}.",
+        "Zítra možná zahřmí, tak si hraj raději doma. Přes den {teplota} {stupne}.",
+        "Až se vyspíš, může se přihnat bouřka. Přes den {teplota} {stupne}.",
+        "Mraky na zítřek chystají bouřku a {teplota} {stupne}."
+      ],
+      "mlha": [
+        "Zítra bude mlha, svět se schová do bílého. Přes den {teplota} {stupne}.",
+        "Na zítřek se chystá mlha a {teplota} {stupne}.",
+        "Zítra ráno možná nebude vidět ani na plot. Přes den {teplota} {stupne}.",
+        "Až se vyspíš, venku bude mlha jako mléko. Přes den {teplota} {stupne}.",
+        "Mlha si zítra přijde pohrát na schovávanou, přes den {teplota} {stupne}."
+      ]
+    }
   }
 }

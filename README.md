@@ -120,7 +120,7 @@ Buď přes `trmnlp` (`cd plugin && bin/trmnlp login && bin/trmnlp push`), nebo r
 | Markup – Full | obsah `plugin/src/full.liquid` |
 
 ```
-https://api.open-meteo.com/v1/forecast?latitude={{ latitude }}&longitude={{ longitude }}&current=temperature_2m,weather_code,wind_speed_10m,is_day&timezone=Europe/Prague
+https://api.open-meteo.com/v1/forecast?latitude={{ latitude }}&longitude={{ longitude }}&current=temperature_2m,weather_code,wind_speed_10m,is_day&hourly=weather_code&daily=weather_code,temperature_2m_max&forecast_days=2&timezone=Europe/Prague
 {{ base_url }}/texty.json
 ```
 
@@ -138,7 +138,8 @@ Plugin zatím podporuje jen layout **full**.
 | doba textu | podle hodiny: 21–4 noc · 5–8 ráno · 18–20 nebo tma během dne (zimní odpoledne) večer · jinak den |
 | teplotní pásmo | mráz < 0 · zima 0–9 · chladno 10–17 · teplo 18–25 · horko > 25 (zaokrouhlená teplota) |
 | vítr | slabý < 15 km/h (nic se nepíše) · střední 15–35 · silný > 35 |
-| text | `{věta počasí} Venku je {teplota} {stupeň/stupně/stupňů}. {věta oblečení} {věta o větru}` |
+| předpověď | 5–17 h: srážky později dnes (do 19 h), jinak do 13 h oteplení o ≥ 4 °C · 18–4 h: počasí a maximum na zítřek |
+| text | `{věta počasí} Venku je {teplota} {stupeň/stupně/stupňů}. {věta oblečení} {věta o větru} {věta předpovědi}` |
 
 Datum a hodina se berou z `IDX_0.current.time` (lokální čas díky `timezone=Europe/Prague`), ne z `now`.
 Věty se vybírají indexem z dne v roce a hodiny, takže jsou v rámci hodiny stabilní. Když data chybí,
@@ -149,15 +150,17 @@ zobrazí se `vychozi_den.png` s neutrální větou; když chybí jen `texty.json
 Texty jsou krátké a srozumitelné dětem 4–8 let. Popisy počasí používají přirozenou mluvenou češtinu,
 konkrétní pozorování a občas drobný humor nebo námět k objevování. Zdrobněliny a přirovnání nejsou
 povinné; text má znít přirozeně i při čtení nahlas. Ranní text se může zobrazit před východem slunce,
-večerní před setměním i po něm. Texty neslibují vývoj počasí, který z aktuálních dat neznáme.
+večerní před setměním i po něm. Popisy počasí neslibují vývoj, o budoucnosti mluví jen věty předpovědi.
 U bouřky a silného větru
 nezlehčují nebezpečí ani strach dítěte; mohou nabídnout společnost dospělého nebo hraní doma.
 Věty o oblečení a větru se kombinují s každým druhem počasí, proto nemají předpokládat slunečno
 nebo konkrétní denní dobu. Tyto obsahové zásady je potřeba kontrolovat ručně.
 
-`public/texty.json` obsahuje 420 textů: počasí (7 kategorií × ráno/den/večer/noc × 10), oblečení (5 pásem × 20)
-a vítr (střední, silný × 20). Text může mít i dvě krátké věty. Pravidla (max 12 slov na celý text,
-žádná čísla, žádné duplicity, max 3 stejné začátky
+`public/texty.json` obsahuje 475 textů: počasí (7 kategorií × ráno/den/večer/noc × 10), oblečení (5 pásem × 20),
+vítr (střední, silný × 20) a předpověď (`pozdeji`: déšť/sníh/bouřka × 5, `otepleni` 5, `zitra`: 7 kategorií × 5).
+Věty předpovědi obsahují zástupné symboly, které doplní šablona: `{kdy}`/`{Kdy}` (dopoledne, odpoledne, večer)
+a `{teplota} {stupne}` (např. „mínus 1 stupeň“). Text může mít i dvě krátké věty. Pravidla (max 12 slov na celý text,
+žádná čísla, žádné duplicity, povinné a povolené zástupné symboly, max 3 stejné začátky
 ve skupině, oblečení neodporuje pásmu) hlídá:
 
 ```

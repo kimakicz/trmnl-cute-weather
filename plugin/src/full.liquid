@@ -20,10 +20,10 @@
 </style>
 
 <div class="layout">
-  <div class="cw" data-obrazek="{{ cw_obrazek }}" data-ok="{{ cw_ok }}" data-kat="{{ cw_kat }}" data-obdobi="{{ cw_obd }}" data-doba="{{ cw_doba }}" data-doba-textu="{{ cw_doba_textu }}" data-pasmo="{{ cw_pasmo }}" data-vitr="{{ cw_vitr }}">
+  <div class="cw" data-obrazek="{{ cw_obrazek }}" data-ok="{{ cw_ok }}" data-kat="{{ cw_kat }}" data-obdobi="{{ cw_obd }}" data-doba="{{ cw_doba }}" data-doba-textu="{{ cw_doba_textu }}" data-pasmo="{{ cw_pasmo }}" data-vitr="{{ cw_vitr }}" data-predpoved="{{ cw_predpoved }}">
     <img class="cw__img" src="{{ cw_base }}/img/{{ cw_obrazek }}.png" alt="">
     <div class="cw__box">
-      <span class="cw__text">{{ cw_veta_pocasi }}{% if cw_ok %} Venku je <span class="cw__temp">{{ cw_teplota }}</span> {{ cw_stupne }}.{% endif %}{% if cw_veta_obleceni != "" %} {{ cw_veta_obleceni }}{% endif %}{% if cw_veta_vitr != "" %} {{ cw_veta_vitr }}{% endif %}</span>
+      <span class="cw__text">{{ cw_veta_pocasi }}{% if cw_ok %} Venku je <span class="cw__temp">{{ cw_teplota }}</span> {{ cw_stupne }}.{% endif %}{% if cw_veta_obleceni != "" %} {{ cw_veta_obleceni }}{% endif %}{% if cw_veta_vitr != "" %} {{ cw_veta_vitr }}{% endif %}{% if cw_veta_predpoved != "" %} {{ cw_veta_predpoved }}{% endif %}</span>
     </div>
   </div>
 </div>

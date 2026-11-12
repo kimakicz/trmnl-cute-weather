@@ -12,7 +12,14 @@ DOBY = ["rano", "den", "vecer", "noc"]
 PASMA = ["mraz", "zima", "chladno", "teplo", "horko"]
 SILY = ["stredni", "silny"]   # slabý vítr se nezobrazuje
 
-POCTY_VET = {"pocasi": 10, "obleceni": 20, "vitr": 20}
+SRAZKY = ["dest", "snih", "bourka"]
+
+POCTY_VET = {"pocasi": 10, "obleceni": 20, "vitr": 20, "predpoved": 5}
+
+# zástupné symboly, které šablona nahrazuje; skupina předpovědi musí obsahovat aspoň jednu ze sad
+ZASTUPNE = re.compile(r"\{[^}]*\}")
+KDY = ({"{kdy}"}, {"{Kdy}"})
+TEPLOTA = ({"{teplota}", "{stupne}"},)
 MAX_SLOV = 12
 MAX_STEJNY_ZACATEK = 3
 
@@ -51,7 +58,7 @@ def zkontroluj_klice(nazev, slovnik, ocekavane, chyby):
     return True
 
 
-def zkontroluj_skupinu(nazev, vety, chyby, vsechny, ocekavany_pocet):
+def zkontroluj_skupinu(nazev, vety, chyby, vsechny, ocekavany_pocet, zastupne=()):
     if not isinstance(vety, list):
         chyby.append(f"{nazev}: očekáván seznam vět")
         return
@@ -71,7 +78,13 @@ def zkontroluj_skupinu(nazev, vety, chyby, vsechny, ocekavany_pocet):
             chyby.append(f"{kde}: {pocet_slov} slov (max {MAX_SLOV}): {veta}")
         if ZAKAZANE.search(veta):
             chyby.append(f"{kde}: číslo nebo teplota v textu: {veta}")
-        if not veta[0].isupper():
+        nalezene = set(ZASTUPNE.findall(veta))
+        povolene = set().union(*zastupne)
+        if nalezene - povolene:
+            chyby.append(f"{kde}: neznámý zástupný symbol {sorted(nalezene - povolene)}: {veta}")
+        if zastupne and not any(sada <= nalezene for sada in zastupne):
+            chyby.append(f"{kde}: chybí zástupný symbol ({' nebo '.join(' '.join(sorted(z)) for z in zastupne)}): {veta}")
+        if not (veta[0].isupper() or veta.startswith("{Kdy}")):
             chyby.append(f"{kde}: nezačíná velkým písmenem: {veta}")
         if veta[-1] not in ".!?":
             chyby.append(f"{kde}: chybí koncová interpunkce: {veta}")
@@ -97,7 +110,7 @@ def main():
     chyby = []
     vsechny = {}  # normalizovaná věta -> seznam výskytů (duplicity napříč celým souborem)
 
-    if zkontroluj_klice("kořen", data, ["pocasi", "obleceni", "vitr"], chyby):
+    if zkontroluj_klice("kořen", data, ["pocasi", "obleceni", "vitr", "predpoved"], chyby):
         pocasi = data.get("pocasi", {})
         if zkontroluj_klice("pocasi", pocasi, KATEGORIE, chyby):
             for kat in KATEGORIE:
@@ -123,6 +136,20 @@ def main():
                             for i, veta in enumerate(obsah[klic], 1):
                                 if isinstance(veta, str) and ROZPORY[klic].search(veta):
                                     chyby.append(f"obleceni.{klic}[{i}]: oblečení odporuje pásmu: {veta}")
+
+        pp = data.get("predpoved", {})
+        if zkontroluj_klice("predpoved", pp, ["pozdeji", "otepleni", "zitra"], chyby):
+            n = POCTY_VET["predpoved"]
+            if zkontroluj_klice("predpoved.pozdeji", pp.get("pozdeji", {}), SRAZKY, chyby):
+                for kat in SRAZKY:
+                    if kat in pp["pozdeji"]:
+                        zkontroluj_skupinu(f"predpoved.pozdeji.{kat}", pp["pozdeji"][kat], chyby, vsechny, n, KDY)
+            if "otepleni" in pp:
+                zkontroluj_skupinu("predpoved.otepleni", pp["otepleni"], chyby, vsechny, n, TEPLOTA)
+            if zkontroluj_klice("predpoved.zitra", pp.get("zitra", {}), KATEGORIE, chyby):
+                for kat in KATEGORIE:
+                    if kat in pp["zitra"]:
+                        zkontroluj_skupinu(f"predpoved.zitra.{kat}", pp["zitra"][kat], chyby, vsechny, n, TEPLOTA)
 
     for veta, vyskyty in vsechny.items():
         if len(vyskyty) > 1:
